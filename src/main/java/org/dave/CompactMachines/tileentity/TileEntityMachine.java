@@ -41,6 +41,7 @@ import org.dave.CompactMachines.integration.gas.GasSharedStorage;
 import org.dave.CompactMachines.integration.item.ItemSharedStorage;
 import org.dave.CompactMachines.integration.opencomputers.OpenComputersSharedStorage;
 import org.dave.CompactMachines.integration.redstoneflux.FluxSharedStorage;
+import org.dave.CompactMachines.integration.ic2.IC2SharedStorage;
 import org.dave.CompactMachines.machines.tools.ChunkLoadingTools;
 import org.dave.CompactMachines.machines.tools.CubeTools;
 import org.dave.CompactMachines.reference.Names;
@@ -56,6 +57,12 @@ import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+import net.minecraftforge.common.MinecraftForge;
+import ic2.api.energy.event.EnergyTileLoadEvent;
+import ic2.api.energy.event.EnergyTileUnloadEvent;
+import ic2.api.energy.tile.IEnergySink;
+import ic2.api.energy.tile.IEnergySource;
+
 @Optional.InterfaceList({
 		@Optional.Interface(iface = "appeng.api.networking.IGridHost", modid = "appliedenergistics2"),
 		@Optional.Interface(iface = "appeng.api.movable.IMovableTile", modid = "appliedenergistics2"),
@@ -63,9 +70,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 		@Optional.Interface(iface = "li.cil.oc.api.network.SidedEnvironment", modid = "OpenComputers"),
 		@Optional.Interface(iface = "mekanism.api.gas.IGasHandler", modid = "Mekanism"),
 		@Optional.Interface(iface = "mekanism.api.gas.ITubeConnection", modid = "Mekanism"),
-		@Optional.Interface(iface = "vazkii.botania.api.mana.IManaPool", modid = "Botania")
+    @Optional.Interface(iface = "vazkii.botania.api.mana.IManaPool", modid = "Botania"),
+    @Optional.Interface(iface = "ic2.api.energy.tile.IEnergySource", modid = "IC2"),
+    @Optional.Interface(iface = "ic2.api.energy.tile.IEnergySink", modid = "IC2")
 })
-public class TileEntityMachine extends TileEntityCM implements ISidedInventory, IFluidHandler, IGasHandler, ITubeConnection, IEnergyHandler, IGridHost, IMovableTile, IBundledTile, SidedEnvironment, IManaPool {
+public class TileEntityMachine extends TileEntityCM implements ISidedInventory, IFluidHandler, IGasHandler, ITubeConnection, IEnergyHandler, IGridHost, IMovableTile, IBundledTile, SidedEnvironment, IManaPool, IEnergySource, IEnergySink {
 
 	public int								coords			= -1;
 	public int[]							_fluidid;
@@ -86,6 +95,9 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
 	public static final int					INVENTORY_SIZE	= 6;
 
+  private boolean _isAddedToEnergyNet;
+  private boolean _didFirstAddToNet;
+
 	public TileEntityMachine() {
 		super();
 		// XXX: Should these be initialised to -1, as in TileEntityInterface
@@ -100,6 +112,9 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
 		gridBlocks = new HashMap<Integer, CMGridBlock>();
 		gridNodes = new HashMap<Integer, IGridNode>();
+
+    _isAddedToEnergyNet = false;
+    _didFirstAddToNet = false;
 	}
 
 	@Override
@@ -139,6 +154,14 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 	public BotaniaSharedStorage getStorageBotania(int side) {
 		return (BotaniaSharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, 0, "botania");
 	}
+
+	public IC2SharedStorage getStorageIC2in(int side) {
+		return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, side, "IC2");
+	}
+
+    public IC2SharedStorage getStorageIC2out() {
+        return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, 7, "IC2");
+    }
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbtTagCompound)
@@ -185,8 +208,23 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		deinitialize();
 	}
 
-	@Override
+  @Override
+  public void validate() {
+      super.validate();
+      if(Reference.IC2_AVAILABLE && !_isAddedToEnergyNet) {
+          _didFirstAddToNet = false;
+      }
+  }
+
+  @Override
 	public void invalidate() {
+		if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
+			if (!worldObj.isRemote) {
+				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
+			}
+			_isAddedToEnergyNet = false;
+		}
+
 		super.invalidate();
 
 		if (worldObj.isRemote) {
@@ -255,6 +293,11 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 			updateIncomingSignals();
 		}
 
+    if (Reference.IC2_AVAILABLE) {
+        addToEnergyNet();
+    }
+
+
 		if (!worldObj.isRemote) {
 			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 				TileEntity outside = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
@@ -269,6 +312,13 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		}
 	}
 
+    private void addToEnergyNet() {
+        if(!_didFirstAddToNet && !worldObj.isRemote) {
+            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
+            _didFirstAddToNet = true;
+            _isAddedToEnergyNet = true;
+        }
+    }
 
 	public ChunkCoordinates getChunkCoordinates() {
 		int x = coords * ConfigurationHandler.cubeDistance;
@@ -795,4 +845,54 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		}
 		return getStorageBotania(0).isOutputtingPower();
 	}
+
+  @Override
+  @Optional.Method(modid = "IC2")
+  public int getSourceTier() {
+    return Integer.MAX_VALUE;
+  }
+
+  @Override
+  @Optional.Method(modid = "IC2")
+  public int getSinkTier() {
+    return Integer.MAX_VALUE;
+  }
+
+  @Override
+  @Optional.Method(modid = "IC2")
+  public double injectEnergy(ForgeDirection direction, double amount, double voltage)
+  {
+    return getStorageIC2in(direction.ordinal()).injectEnergy(amount, voltage);
+  }
+    
+  @Override
+  @Optional.Method(modid = "IC2")
+  public boolean acceptsEnergyFrom(TileEntity emitter, ForgeDirection direction) {
+    return ConfigurationHandler.enableIntegrationIC2;
+  }
+
+  @Override
+  public double getDemandedEnergy() {
+    // should be IC2in, but just a constant and no side
+    //return getStorageIC2out().getDemandedEnergy();
+    return ConfigurationHandler.capacityEU;
+  }
+    
+  @Override
+  @Optional.Method(modid = "IC2")
+  public void drawEnergy(double amount) {
+    getStorageIC2out().drawEnergy(amount);
+  }
+
+  @Override
+  @Optional.Method(modid = "IC2")
+  public double getOfferedEnergy() {
+    return getStorageIC2out().getOfferedEnergy();
+  }
+    
+  @Override
+  @Optional.Method(modid = "IC2")
+  public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
+    return getStorageIC2out().emitsEnergyTo(emitter, direction);
+  }
 }

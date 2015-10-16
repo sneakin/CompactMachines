@@ -18,6 +18,7 @@ public class Reference {
 	public static boolean		OC_AVAILABLE		= false;
 	public static boolean		MEK_AVAILABLE		= false;
 	public static boolean		BOTANIA_AVAILABLE	= false;
+	public static boolean		IC2_AVAILABLE	= false;
 
 	public static Item			upgradeItem			= null;
 

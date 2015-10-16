@@ -21,6 +21,7 @@ public class ConfigurationHandler {
 	public static int			capacityFluid;
 	public static int			capacityGas;
 	public static int			capacityMana;
+	public static int			capacityEU;
 	public static int			cooldownRF;
 	public static int			cooldownItems;
 	public static int			cooldownFluid;
@@ -42,6 +43,7 @@ public class ConfigurationHandler {
 	public static boolean		enableIntegrationMekanism;
 	public static boolean		enableIntegrationProjectRed;
 	public static boolean		enableIntegrationOpenComputers;
+	public static boolean		enableIntegrationIC2;
 
 	public static boolean		allowRespawning;
 
@@ -83,6 +85,7 @@ public class ConfigurationHandler {
 
 		enableIntegrationAE2 = configuration.getBoolean("AppliedEnergistics", "Integration", true, "Allow AE2 connections through Compact Machines");
 		enableIntegrationBotania = configuration.getBoolean("Botania", "Integration", false, "Compact Machines can transfer Mana. This is not sided, i.e. all interfaces share the same amount of mana.");
+		enableIntegrationIC2 = configuration.getBoolean("IC2", "Integration", true, "Compact Machines can transfer EU. FIXME? This is not sided, i.e. all interfaces share the same amount of mana.");
 		enableIntegrationMekanism = configuration.getBoolean("Mekanism", "Integration", true, "Transfer Mekanism Gas");
 		enableIntegrationProjectRed = configuration.getBoolean("ProjectRed", "Integration", true, "Transfer bundled cable signals through Compact Machines");
 		enableIntegrationOpenComputers = configuration.getBoolean("OpenComputers", "Integration", true, "Allow OpenComputers network connections through Compact Machines");
@@ -96,6 +99,7 @@ public class ConfigurationHandler {
 		capacityFluid = configuration.getInt("capacityFluid", "CompactMachines", 1000, 0, Integer.MAX_VALUE, "Maximum amount of fluid (in mB) a CM buffer can hold.");
 		capacityGas = configuration.getInt("capacityGas", "CompactMachines", 1024, 0, Integer.MAX_VALUE, "Maximum amount of gas a CM buffer can hold.");
 		capacityMana = configuration.getInt("capacityMana", "CompactMachines", 10000, 0, Integer.MAX_VALUE, "Maximum amount of Botania Mana a CM buffer can hold.");
+		capacityEU = configuration.getInt("capacityEU", "CompactMachines", 32, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer can hold.");
 
 		int red = configuration.getInt("psdDisplayColor.red", "Rendering", 0x27, 0, Integer.MAX_VALUE, "Font color for the PSD");
 		int green = configuration.getInt("psdDisplayColor.green", "Rendering", 0xEB, 0, Integer.MAX_VALUE, "");

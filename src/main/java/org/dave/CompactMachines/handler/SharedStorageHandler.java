@@ -30,6 +30,7 @@ import org.dave.CompactMachines.integration.gas.GasSharedStorage;
 import org.dave.CompactMachines.integration.item.ItemSharedStorage;
 import org.dave.CompactMachines.integration.opencomputers.OpenComputersSharedStorage;
 import org.dave.CompactMachines.integration.redstoneflux.FluxSharedStorage;
+import org.dave.CompactMachines.integration.ic2.IC2SharedStorage;
 import org.dave.CompactMachines.reference.Reference;
 import org.dave.CompactMachines.utility.LogHelper;
 
@@ -89,6 +90,10 @@ public class SharedStorageHandler {
 		if(Reference.BOTANIA_AVAILABLE) {
 			registerModInteraction("botania", BotaniaSharedStorage.class);
 		}
+
+    if(Reference.IC2_AVAILABLE) {
+        registerModInteraction("IC2", IC2SharedStorage.class);
+    }
 
 		if (!client) {
 			load();

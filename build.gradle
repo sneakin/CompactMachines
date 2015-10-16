@@ -48,6 +48,13 @@ repositories {
         name "FireBall API Depot"
         url "http://dl.tsr.me/artifactory/libs-release-local"
     }
+
+	// IC2
+	maven {
+		name = "ic2"
+		url = "http://maven.ic2.player.to/"
+	}
+
 }
 
 dependencies {
@@ -64,6 +71,9 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+	compile 'net.industrial-craft:industrialcraft-2:2.2.782-experimental:dev' //IC2
+
 }
 
 allprojects {
