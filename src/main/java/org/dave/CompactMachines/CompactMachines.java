@@ -148,7 +148,7 @@ public class CompactMachines {
 		Recipes.init();
 
 		if (Loader.isModLoaded("Waila")) {
-			FMLInterModComms.sendMessage("Waila", "register", "org.dave.CompactMachines.handler.waila.BlockHandler.callbackRegister");
+			FMLInterModComms.sendMessage("Waila", "register", "org.dave.CompactMachines.handler.WailaHandler.callbackRegister");
 		}
 	}
 
