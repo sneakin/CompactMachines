@@ -1,5 +1,7 @@
 package org.dave.CompactMachines.tileentity;
 
+import java.util.List;
+
 import li.cil.oc.api.network.Environment;
 import li.cil.oc.api.network.Message;
 import li.cil.oc.api.network.Node;
@@ -43,6 +45,9 @@ import appeng.api.networking.IGridNode;
 import appeng.api.util.AECableType;
 import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.Optional;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 
 import net.minecraftforge.common.MinecraftForge;
 import ic2.api.energy.event.EnergyTileLoadEvent;
@@ -128,9 +133,9 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, side, "IC2");
 	}
 
-    public IC2SharedStorage getStorageIC2out() {
-        return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, 7, "IC2");
-    }
+  public IC2SharedStorage getStorageIC2out() {
+    return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, ForgeDirection.UNKNOWN.ordinal(), "IC2");
+  }
 
 	@Override
 	public void onChunkUnload() {
@@ -154,12 +159,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
     
 	@Override
 	public void invalidate() {
-		if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
-			if (!worldObj.isRemote) {
-				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
-			}
-			_isAddedToEnergyNet = false;
-		}
+    removeFromEnergyNet();
 
 		super.invalidate();
 
@@ -170,6 +170,15 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 			}
 		}
 	}
+
+  private void removeFromEnergyNet() {
+    if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
+			if (!worldObj.isRemote) {
+				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
+			}
+			_isAddedToEnergyNet = false;
+		}
+  }
 
 	public void setSide(int side) {
 		this.side = side;
@@ -640,4 +649,8 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
     return getStorageIC2in().emitsEnergyTo(emitter, direction);
 	}
+
+  public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
+  public double getIncomingEU() { return getStorageIC2in().eu; }
+  public double getOutgoingEU() { return getStorageIC2out().eu; }
 }

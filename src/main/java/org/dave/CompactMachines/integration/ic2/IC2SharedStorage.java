@@ -6,10 +6,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.dave.CompactMachines.handler.SharedStorageHandler;
-import org.dave.CompactMachines.integration.AbstractSharedStorage;
+import org.dave.CompactMachines.integration.AbstractBufferedStorage;
 import cpw.mods.fml.common.Optional;
 
-public class IC2SharedStorage extends AbstractSharedStorage {
+public class IC2SharedStorage extends AbstractBufferedStorage {
   public double eu;
     
   public IC2SharedStorage(SharedStorageHandler storageHandler, int coord, int side) {
@@ -23,47 +23,43 @@ public class IC2SharedStorage extends AbstractSharedStorage {
     return "IC2";
   }
 
-  /*
 	@Override
 	public NBTTagCompound saveToTag() {
-		NBTTagCompound compound = super.saveToTag();
-		compound.setDouble("energyEU", eu);
+		NBTTagCompound compound = new NBTTagCompound();
+		compound.setDouble("energy", eu);
 		return compound;
 	}
 
 	@Override
 	public void loadFromTag(NBTTagCompound tag) {
-		super.loadFromTag(tag);
-		eu = tag.getDouble("energyEU");
+		eu = tag.getDouble("energy");
 	}
-  */
-  
 
   public double injectEnergy(double amount, double voltage) {
-    /*double new_amount = eu + amount;
-    if(new_amount < ConfigurationHandler.capacityEU) { // TODO
+    setDirty();
+    
+    double new_amount = eu + amount;
+    if(new_amount <= ConfigurationHandler.capacityEU) {
       this.eu = new_amount;
       return 0.0;
     } else {
       this.eu = ConfigurationHandler.capacityEU;
       return new_amount - ConfigurationHandler.capacityEU;
-      }*/
-    this.eu += amount;
-    return 0.0;
+    }
   }
 
   public double getDemandedEnergy() {
     double deu = ConfigurationHandler.capacityEU - eu;
     if(deu < 0.0) return 0.0;
     else return deu;
-    //return ConfigurationHandler.capacityEU; // TODO configuration option
   }
 
   public double getOfferedEnergy() {
-    return Math.min(eu, ConfigurationHandler.capacityEU); // TODO
+    return Math.min(eu, ConfigurationHandler.capacityEU);
   }
 
   public void drawEnergy(double amount) {
+    setDirty();
     this.eu -= amount;
   }
 

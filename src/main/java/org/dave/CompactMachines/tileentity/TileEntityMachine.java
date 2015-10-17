@@ -1,5 +1,6 @@
 package org.dave.CompactMachines.tileentity;
 
+import java.util.List;
 import java.util.HashMap;
 
 import li.cil.oc.api.network.Node;
@@ -159,9 +160,9 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, side, "IC2");
 	}
 
-    public IC2SharedStorage getStorageIC2out() {
-        return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, 7, "IC2");
-    }
+  public IC2SharedStorage getStorageIC2out() {
+    return (IC2SharedStorage) SharedStorageHandler.instance(worldObj.isRemote).getStorage(this.coords, ForgeDirection.UNKNOWN.ordinal(), "IC2");
+  }
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbtTagCompound)
@@ -210,10 +211,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
   @Override
   public void validate() {
-      super.validate();
-      if(Reference.IC2_AVAILABLE && !_isAddedToEnergyNet) {
-          _didFirstAddToNet = false;
-      }
+    super.validate();
+    if(Reference.IC2_AVAILABLE && !_isAddedToEnergyNet) {
+      _didFirstAddToNet = false;
+    }
   }
 
   @Override
@@ -873,9 +874,14 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
   @Override
   public double getDemandedEnergy() {
-    // should be IC2in, but just a constant and no side
-    //return getStorageIC2out().getDemandedEnergy();
-    return ConfigurationHandler.capacityEU;
+    double sum = 0.0;
+    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+      sum += getStorageIC2in(dir.ordinal()).getDemandedEnergy();
+    }
+
+    return Math.min(sum, ConfigurationHandler.capacityEU);
+    // should be IC2in, but we have no side so we try
+    //return getStorageIC2in(demanding_side).getDemandedEnergy();
   }
     
   @Override
@@ -895,4 +901,18 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
   public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
     return getStorageIC2out().emitsEnergyTo(emitter, direction);
   }
+
+  public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
+
+  public double getIncomingEU(int side) { return getStorageIC2in(side).eu; }
+
+  public double getIncomingEU() {
+    double sum = 0.0;
+    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+      sum += getStorageIC2in(dir.ordinal()).eu;
+    }
+    return sum;
+  }
+
+  public double getOutgoingEU() { return getStorageIC2out().eu; }
 }
