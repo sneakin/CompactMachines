@@ -95,6 +95,14 @@ public class GuiMachine extends GuiContainer {
 					}
 					lines.add(String.format("%s: %.1f%%", StatCollector.translateToLocal("tooltip.cm:machine.mana"), ratio * 100));
 				}
+
+        lines.add("EU Capacity: " + tileEntityMachine.getEUCapacity() + " EU/t");
+        if(tileEntityMachine.getIncomingEU(i) != 0.0) {
+            lines.add("  IN: " + tileEntityMachine.getIncomingEU(i));
+        }
+        if(tileEntityMachine.getOutgoingEU() != 0.0) {
+            lines.add(" OUT: " + tileEntityMachine.getOutgoingEU());
+        }
 			}
 		}
 

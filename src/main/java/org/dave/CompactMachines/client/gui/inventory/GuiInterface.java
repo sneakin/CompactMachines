@@ -279,6 +279,13 @@ public class GuiInterface extends GuiContainer {
 				lines.add(String.format("%s: %.1f%%", StatCollector.translateToLocal("tooltip.cm:machine.mana"), ratio * 100));
 			}
 
+      lines.add("EU Capacity: " + tileEntityInterface.getEUCapacity() + " EU/t");
+      if(tileEntityInterface.getIncomingEU() != 0.0) {
+        lines.add("EU in: " + tileEntityInterface.getIncomingEU());
+      }
+      if(tileEntityInterface.getOutgoingEU() != 0.0) {
+        lines.add("EU out: " + tileEntityInterface.getOutgoingEU());
+      }
 		}
 
 		if (lines.size() > 0) {

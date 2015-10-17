@@ -59,51 +59,79 @@ public class WailaHandler implements IWailaDataProvider {
 		TileEntity te = accessor.getTileEntity();
 
 		if (te instanceof TileEntityMachine) {
-			TileEntityMachine machine = (TileEntityMachine) te;
-
-			if (machine.hasCustomName() && machine.coords != -1 && !machine.getCustomName().equals("Compact Machine")) {
-				currenttip.add(ITALIC + machine.getCustomName() + RESET);
-			}
-
-			String langStr = "tooltip.cm:machine.size.zero";
-			switch (machine.meta) {
-				case 0:
-					langStr = "tooltip.cm:machine.size.zero";
-					break;
-				case 1:
-					langStr = "tooltip.cm:machine.size.one";
-					break;
-				case 2:
-					langStr = "tooltip.cm:machine.size.two";
-					break;
-				case 3:
-					langStr = "tooltip.cm:machine.size.three";
-					break;
-				case 4:
-					langStr = "tooltip.cm:machine.size.four";
-					break;
-				case 5:
-					langStr = "tooltip.cm:machine.size.five";
-					break;
-				default:
-					break;
-			}
-
-			String direction = accessor.getSide().toString();
-			direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
-			currenttip.add(YELLOW + "Side: " + RESET + direction);
-			currenttip.add(YELLOW + "Size: " + RESET + StatCollector.translateToLocal(langStr));
+      return addMachineBody(te, currenttip, accessor);
 		} else if (te instanceof TileEntityInterface) {
-			TileEntityInterface interf = (TileEntityInterface) te;
-			if (interf.side != -1) {
-				String direction = ForgeDirection.getOrientation(interf.side).toString();
-				direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
-				currenttip.add(YELLOW + "Side: " + RESET + direction);
-			}
+      return addInterfaceBody(te, currenttip, accessor);
 		}
 
 		return currenttip;
 	}
+
+  private List<String> addInterfaceBody(TileEntity te, List<String> currenttip, IWailaDataAccessor accessor) {
+    TileEntityInterface interf = (TileEntityInterface) te;
+    if (interf.side != -1) {
+      String direction = ForgeDirection.getOrientation(interf.side).toString();
+      direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
+      currenttip.add(YELLOW + "Side: " + RESET + direction);
+
+      if(ConfigurationHandler.enableIntegrationIC2) {
+        currenttip.add(YELLOW + "EU Capacity: " + RESET + interf.getEUCapacity() + " EU/t");
+        currenttip.add("  IN: " + interf.getIncomingEU());
+        currenttip.add(" OUT: " + interf.getOutgoingEU());
+      }
+    }
+
+    return currenttip;
+  }
+  
+  private List<String> addMachineBody(TileEntity te, List<String> currenttip, IWailaDataAccessor  accessor) {
+    TileEntityMachine machine = (TileEntityMachine) te;
+
+    if (machine.hasCustomName() && machine.coords != -1 && !machine.getCustomName().equals("Compact Machine")) {
+      currenttip.add(ITALIC + machine.getCustomName() + RESET);
+    }
+
+    String langStr = "tooltip.cm:machine.size.zero";
+    switch (machine.meta) {
+    case 0:
+      langStr = "tooltip.cm:machine.size.zero";
+      break;
+    case 1:
+      langStr = "tooltip.cm:machine.size.one";
+      break;
+    case 2:
+      langStr = "tooltip.cm:machine.size.two";
+      break;
+    case 3:
+      langStr = "tooltip.cm:machine.size.three";
+      break;
+    case 4:
+      langStr = "tooltip.cm:machine.size.four";
+      break;
+    case 5:
+      langStr = "tooltip.cm:machine.size.five";
+      break;
+    default:
+      break;
+    }
+
+    String direction = accessor.getSide().toString();
+    direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
+    currenttip.add(YELLOW + "Side: " + RESET + direction);
+    currenttip.add(YELLOW + "Size: " + RESET + StatCollector.translateToLocal(langStr));
+
+    if(ConfigurationHandler.enableIntegrationIC2) {
+      currenttip.add(YELLOW + "EU Capacity: " + RESET + machine.getEUCapacity() + " EU/t");
+      if(machine.getIncomingEU() != 0.0) {
+        currenttip.add("  IN: " + machine.getIncomingEU());
+      }
+      if(machine.getOutgoingEU() != 0.0) {
+        currenttip.add(" OUT: " + machine.getOutgoingEU());
+      }
+    }
+
+    return currenttip;
+  }
 
 	@Override
 	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config) {
