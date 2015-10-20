@@ -41,6 +41,8 @@ import org.dave.CompactMachines.integration.ic2.IC2SharedStorage;
 import org.dave.CompactMachines.reference.Names;
 import org.dave.CompactMachines.reference.Reference;
 
+import org.dave.CompactMachines.utility.LogHelper;
+
 import vazkii.botania.api.mana.IManaPool;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
@@ -49,9 +51,8 @@ import cofh.api.energy.IEnergyHandler;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-
-
 import net.minecraftforge.common.MinecraftForge;
+
 import ic2.api.energy.event.EnergyTileLoadEvent;
 import ic2.api.energy.event.EnergyTileUnloadEvent;
 import ic2.api.energy.tile.IEnergySink;
@@ -179,6 +180,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
 			}
 			_isAddedToEnergyNet = false;
+			//LogHelper.info(this + " " + side + " removeFromEnergyNet");
 		}
   }
 
@@ -240,6 +242,13 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 
     if (Reference.IC2_AVAILABLE) {
         addToEnergyNet();
+        
+        if(getStorageIC2in().interfaceModeChanged()) {
+          //LogHelper.info(this + " mode changed " + getStorageIC2in().getHoppingMode());
+
+          readdToEnergyNet();
+          getStorageIC2in().clearInterfaceModeChanged();
+        }
     }
 
 		ForgeDirection dir = ForgeDirection.getOrientation(side).getOpposite();
@@ -257,11 +266,17 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	}
 
     private void addToEnergyNet() {
-        if(!_didFirstAddToNet && !worldObj.isRemote) {
-            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
-            _didFirstAddToNet = true;
-            _isAddedToEnergyNet = true;
-        }
+    if(!_didFirstAddToNet && !worldObj.isRemote) {
+      MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
+      _didFirstAddToNet = true;
+      _isAddedToEnergyNet = true;
+			//LogHelper.info(this + " " + side + " addToEnergyNet");
+    }
+  }
+
+    private void readdToEnergyNet() {
+      removeFromEnergyNet();
+      _didFirstAddToNet = false;
     }
 
 	private void updateIncomingSignals() {
@@ -473,7 +488,12 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	}
 
 	public HoppingMode getHoppingMode(ForgeDirection from) {
-		return getStorageFlux().getHoppingMode();
+    return getHoppingMode();
+	}
+
+	public HoppingMode getHoppingMode() {
+		//return getStorageFlux().getHoppingMode();
+    return getStorageIC2in().getHoppingMode();
 	}
 
 	public CMGridBlock getGridBlock(ForgeDirection dir) {
@@ -620,39 +640,67 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
   @Optional.Method(modid = "IC2")
   public double injectEnergy(ForgeDirection direction, double amount, double voltage)
   {
+    //LogHelper.info(this + " " + side + " injectEnergy " + amount + " " + direction);
+    IC2SharedStorage storage = getStorageIC2in();
+    if(storage.getHoppingMode() == HoppingMode.Import ||
+       storage.getHoppingMode() == HoppingMode.Disabled) {
+      return amount;
+    }
+
     return getStorageIC2out().injectEnergy(amount, voltage);
   }
     
   @Override
   @Optional.Method(modid = "IC2")
 	public boolean acceptsEnergyFrom(TileEntity emitter, ForgeDirection direction) {
-    return ConfigurationHandler.enableIntegrationIC2;
+    //LogHelper.info("acceptsEnergyFrom: " + direction + " " + getStorageIC2in().getHoppingMode());
+    
+    return getStorageIC2out().acceptsEnergyFrom(emitter, direction) &&
+      getStorageIC2in().getHoppingMode() != HoppingMode.Disabled &&
+      getStorageIC2in().getHoppingMode() != HoppingMode.Import;
 	}
 
 	@Override
 	public double getDemandedEnergy() {
-    return getStorageIC2out().getDemandedEnergy();
+    //LogHelper.info(this + " " + side + " getDemandedEnergy " + getStorageIC2out().eu + " " + getStorageIC2out().getDemandedEnergy() + " " + getStorageIC2in().getHoppingMode());
+    HoppingMode mode = getStorageIC2in().getHoppingMode();
+    if(mode == HoppingMode.Import || mode == HoppingMode.Disabled) return 0.0;
+    else
+      return getStorageIC2out().getDemandedEnergy();
 	}
     
 	@Override
   @Optional.Method(modid = "IC2")
 	public void drawEnergy(double amount) {
+    //LogHelper.info(this + " " + side + " drawEnergy " + amount);
     getStorageIC2in().drawEnergy(amount);
 	}
 
   @Override
   @Optional.Method(modid = "IC2")
   public double getOfferedEnergy() {
-    return getStorageIC2in().getOfferedEnergy();
+    HoppingMode mode = getStorageIC2in().getHoppingMode();
+    //LogHelper.info(this + " " + side + " getOfferedEnergy " + getStorageIC2in().getOfferedEnergy() + " " + mode);
+    if(mode == HoppingMode.Disabled || mode == HoppingMode.Export)
+      return 0.0;
+    else
+      return getStorageIC2in().getOfferedEnergy();
   }
     
   @Override
   @Optional.Method(modid = "IC2")
 	public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
-    return getStorageIC2in().emitsEnergyTo(emitter, direction);
+    //LogHelper.info(this + " emitsEnergyTo " + direction + " " + getStorageIC2in().getHoppingMode());
+    
+    return getStorageIC2in().emitsEnergyTo(emitter, direction) &&
+      getStorageIC2in().getHoppingMode() != HoppingMode.Disabled &&
+      getStorageIC2in().getHoppingMode() != HoppingMode.Export;
 	}
 
   public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
+  public double getEUrate() { return ConfigurationHandler.rateEU; }
   public double getIncomingEU() { return getStorageIC2in().eu; }
   public double getOutgoingEU() { return getStorageIC2out().eu; }
+
+
 }

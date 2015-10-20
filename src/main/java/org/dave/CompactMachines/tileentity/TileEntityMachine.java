@@ -48,6 +48,7 @@ import org.dave.CompactMachines.machines.tools.ChunkLoadingTools;
 import org.dave.CompactMachines.machines.tools.CubeTools;
 import org.dave.CompactMachines.reference.Names;
 import org.dave.CompactMachines.reference.Reference;
+import org.dave.CompactMachines.utility.LogHelper;
 
 import vazkii.botania.api.mana.IManaPool;
 import appeng.api.movable.IMovableTile;
@@ -220,12 +221,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
   @Override
 	public void invalidate() {
-		if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
-			if (!worldObj.isRemote) {
-				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
-			}
-			_isAddedToEnergyNet = false;
-		}
+    removeFromEnergyNet();
 
 		super.invalidate();
 
@@ -297,6 +293,19 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
     if (Reference.IC2_AVAILABLE) {
         addToEnergyNet();
+
+        boolean needs_update = false;
+        for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+          if(getStorageIC2in(dir.ordinal()).machineModeChanged()) {
+            //LogHelper.info(this + " mode changed " + dir + " " + getStorageIC2in(dir.ordinal()).getHoppingMode());
+            needs_update = true;
+            getStorageIC2in(dir.ordinal()).clearMachineModeChanged();
+          }
+        }
+
+        if(needs_update) {
+          readdToEnergyNet();
+        }
     }
 
 
@@ -314,15 +323,33 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		}
 	}
 
-    private void addToEnergyNet() {
-        if(!_didFirstAddToNet && !worldObj.isRemote) {
-            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
-            _didFirstAddToNet = true;
-            _isAddedToEnergyNet = true;
-        }
+  private void removeFromEnergyNet() {
+		if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
+      
+			if (!worldObj.isRemote) {
+				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
+			}
+			_isAddedToEnergyNet = false;
+      //LogHelper.info(this + " removeFromEnergyNet");
+		}
+  }
+  
+  private void addToEnergyNet() {
+    if(!_didFirstAddToNet && !worldObj.isRemote) {
+      MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
+      _didFirstAddToNet = true;
+      _isAddedToEnergyNet = true;
+      //LogHelper.info(this + " addToEnergyNet");
     }
+  }
 
-	public ChunkCoordinates getChunkCoordinates() {
+  // todo determine if this method or the comment in emit/accept did the trick
+  private void readdToEnergyNet() {
+    removeFromEnergyNet();
+    _didFirstAddToNet = false;
+  }
+
+  public ChunkCoordinates getChunkCoordinates() {
 		int x = coords * ConfigurationHandler.cubeDistance;
 		int y = 39;
 		int z = 0;
@@ -864,23 +891,41 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
   @Optional.Method(modid = "IC2")
   public double injectEnergy(ForgeDirection direction, double amount, double voltage)
   {
-    return getStorageIC2in(direction.ordinal()).injectEnergy(amount, voltage);
+    IC2SharedStorage storage = getStorageIC2in(direction.ordinal());
+    //LogHelper.info(this + " injectEnergy " + amount + " " + direction + " " + storage.getHoppingMode());
+    if(storage.getHoppingMode() == HoppingMode.Export ||
+       storage.getHoppingMode() == HoppingMode.Disabled) {
+      return amount;
+    }
+    
+    return storage.injectEnergy(amount, voltage);
   }
     
   @Override
   @Optional.Method(modid = "IC2")
   public boolean acceptsEnergyFrom(TileEntity emitter, ForgeDirection direction) {
-    return ConfigurationHandler.enableIntegrationIC2;
+    //LogHelper.info(this + " acceptsEnergyFrom " + direction + " " + getStorageIC2in(direction.ordinal()).getHoppingMode());
+
+
+    return getStorageIC2in(direction.ordinal()).acceptsEnergyFrom(emitter, direction) &&
+      getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Disabled &&
+      getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Export;
   }
 
   @Override
   public double getDemandedEnergy() {
-    double sum = 0.0;
+    double max = 0.0;
+    double eu = 0.0;
     for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-      sum += getStorageIC2in(dir.ordinal()).getDemandedEnergy();
+      HoppingMode mode = getStorageIC2in(dir.ordinal()).getHoppingMode();
+      if(mode == HoppingMode.Export || mode == HoppingMode.Disabled) continue;
+      double e = getStorageIC2in(dir.ordinal()).getDemandedEnergy();
+      eu += getStorageIC2in(dir.ordinal()).eu;
+      if(max < e) max = e;
     }
 
-    return Math.min(sum, ConfigurationHandler.capacityEU);
+    //LogHelper.info(this + " getDemandedEnergy " + eu + " " + max);
+    return Math.min(max, ConfigurationHandler.capacityEU);
     // should be IC2in, but we have no side so we try
     //return getStorageIC2in(demanding_side).getDemandedEnergy();
   }
@@ -888,23 +933,29 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
   @Override
   @Optional.Method(modid = "IC2")
   public void drawEnergy(double amount) {
+    //LogHelper.info(this + " drawEnergy " + amount);
     getStorageIC2out().drawEnergy(amount);
   }
 
   @Override
   @Optional.Method(modid = "IC2")
   public double getOfferedEnergy() {
+    //LogHelper.info(this + " getOfferedEnergy " + getStorageIC2out().getOfferedEnergy());
     return getStorageIC2out().getOfferedEnergy();
   }
     
   @Override
   @Optional.Method(modid = "IC2")
   public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
-    return getStorageIC2out().emitsEnergyTo(emitter, direction);
+    //LogHelper.info(this + " emitsEnergyTo " + direction + " " + getStorageIC2in(direction.ordinal()).getHoppingMode());
+
+    return getStorageIC2out().emitsEnergyTo(emitter, direction) &&
+      getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Disabled &&
+      getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Import;
   }
 
   public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
-
+  public double getEUrate() { return ConfigurationHandler.rateEU; }
   public double getIncomingEU(int side) { return getStorageIC2in(side).eu; }
 
   public double getIncomingEU() {
@@ -916,4 +967,12 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
   }
 
   public double getOutgoingEU() { return getStorageIC2out().eu; }
+
+  public HoppingMode getHoppingModeIn(ForgeDirection dir) {
+    return getStorageIC2in(dir.ordinal()).getHoppingMode();
+  }
+
+  public HoppingMode getHoppingModeOut() {
+    return getStorageIC2out().getHoppingMode();
+  }
 }

@@ -6,16 +6,27 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.dave.CompactMachines.handler.SharedStorageHandler;
-import org.dave.CompactMachines.integration.AbstractBufferedStorage;
+import org.dave.CompactMachines.integration.AbstractHoppingStorage;
+import org.dave.CompactMachines.integration.HoppingMode;
 import cpw.mods.fml.common.Optional;
 
-public class IC2SharedStorage extends AbstractBufferedStorage {
+import ic2.api.energy.tile.IEnergySink;
+import ic2.api.energy.tile.IEnergySource;
+
+
+public class IC2SharedStorage extends AbstractHoppingStorage {
   public double eu;
+  private HoppingMode _oldInterfaceMode;
+  private HoppingMode _oldMachineMode;
+  private int _modeClearCount;
     
   public IC2SharedStorage(SharedStorageHandler storageHandler, int coord, int side) {
     super(storageHandler, coord, side);
 
     this.eu = 0;
+    this._oldInterfaceMode = HoppingMode.Null;
+    this._oldMachineMode = HoppingMode.Null;
+    this._modeClearCount = 0;
   }
 
   @Override
@@ -25,37 +36,74 @@ public class IC2SharedStorage extends AbstractBufferedStorage {
 
 	@Override
 	public NBTTagCompound saveToTag() {
-		NBTTagCompound compound = new NBTTagCompound();
+		NBTTagCompound compound = super.saveToTag();
 		compound.setDouble("energy", eu);
 		return compound;
 	}
 
 	@Override
 	public void loadFromTag(NBTTagCompound tag) {
+    super.loadFromTag(tag);
 		eu = tag.getDouble("energy");
 	}
 
-  public double injectEnergy(double amount, double voltage) {
-    setDirty();
-    
-    double new_amount = eu + amount;
-    if(new_amount <= ConfigurationHandler.capacityEU) {
-      this.eu = new_amount;
-      return 0.0;
-    } else {
-      this.eu = ConfigurationHandler.capacityEU;
-      return new_amount - ConfigurationHandler.capacityEU;
+  @Override
+	public void hopToTileEntity(TileEntity target, boolean useOppositeSide) {
+    if(target instanceof IEnergySink || target instanceof IEnergySource) {
+      //target.markDirty();
     }
   }
+
+  public boolean interfaceModeChanged() {
+    return getHoppingMode() != _oldInterfaceMode;
+  }
+  
+  public void clearInterfaceModeChanged() {
+    _oldInterfaceMode = getHoppingMode();
+  }
+
+  public boolean machineModeChanged() {
+    return getHoppingMode() != _oldMachineMode;
+  }
+  
+  public void clearMachineModeChanged() {
+    if(_modeClearCount > 1) { // TODO entanglement
+      _modeClearCount = 0;
+      _oldMachineMode = getHoppingMode();
+    } else {
+      _modeClearCount += 1;
+    }
+  }
+
+  public double injectEnergy(double amount, double voltage) {
+    setDirty();
+
+    // todo rate limit w/ rateEU
+    double new_amount = Math.min(ConfigurationHandler.rateEU, amount);
+    double leftover = amount - new_amount;
+    
+    double new_eu = eu + new_amount;
+    if(new_eu <= ConfigurationHandler.capacityEU) {
+      this.eu = new_eu;
+      return leftover;
+    } else {
+      this.eu = ConfigurationHandler.capacityEU;
+      return leftover + (new_eu - ConfigurationHandler.capacityEU);
+    }
+  }
+
+  public boolean acceptsEnergyFrom(TileEntity emitter, ForgeDirection direction) {
+    return ConfigurationHandler.enableIntegrationIC2;
+	}
 
   public double getDemandedEnergy() {
     double deu = ConfigurationHandler.capacityEU - eu;
     if(deu < 0.0) return 0.0;
-    else return deu;
+    else return Math.min(deu, ConfigurationHandler.rateEU);
   }
 
   public double getOfferedEnergy() {
-    return Math.min(eu, ConfigurationHandler.capacityEU);
+    return Math.min(eu, ConfigurationHandler.rateEU);
   }
 
   public void drawEnergy(double amount) {
@@ -66,5 +114,4 @@ public class IC2SharedStorage extends AbstractBufferedStorage {
 	public boolean emitsEnergyTo(TileEntity emitter, ForgeDirection direction) {
     return ConfigurationHandler.enableIntegrationIC2;
 	}
-
 }
