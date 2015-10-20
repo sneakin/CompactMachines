@@ -229,7 +229,9 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
   @Override
 	public void invalidate() {
-    removeFromEnergyNet();
+    if(Reference.IC2_AVAILABLE) {
+      removeFromEnergyNet();
+    }
 
 		super.invalidate();
 
@@ -302,20 +304,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
     if (Reference.IC2_AVAILABLE) {
         addToEnergyNet();
 
-        boolean needs_update = false;
-        for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
-          if(getStorageIC2in(dir.ordinal()).machineModeChanged()) {
-            //LogHelper.info(this + " mode changed " + dir + " " + getStorageIC2in(dir.ordinal()).getHoppingMode());
-            needs_update = true;
-            getStorageIC2in(dir.ordinal()).clearMachineModeChanged();
-          }
-        }
-
-        if(needs_update) {
+        if(hoppingModeChanged()) {
           readdToEnergyNet();
         }
     }
-
 
 		if (!worldObj.isRemote) {
 			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
@@ -331,8 +323,23 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		}
 	}
 
+  @Optional.Method(modid = "IC2")
+  private boolean hoppingModeChanged() {
+    boolean needs_update = false;
+    for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+      if(getStorageIC2in(dir.ordinal()).machineModeChanged()) {
+        //LogHelper.info(this + " mode changed " + dir + " " + getStorageIC2in(dir.ordinal()).getHoppingMode());
+        getStorageIC2in(dir.ordinal()).clearMachineModeChanged();
+        return true;
+      }
+    }
+
+    return false;
+  }
+  
+  @Optional.Method(modid = "IC2")
   private void removeFromEnergyNet() {
-		if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
+		if (_isAddedToEnergyNet) {
       
 			if (!worldObj.isRemote) {
 				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
@@ -342,6 +349,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		}
   }
   
+  @Optional.Method(modid = "IC2")
   private void addToEnergyNet() {
     if(!_didFirstAddToNet && !worldObj.isRemote) {
       MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
@@ -351,7 +359,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
     }
   }
 
-  // todo determine if this method or the comment in emit/accept did the trick
+  @Optional.Method(modid = "IC2")
   private void readdToEnergyNet() {
     removeFromEnergyNet();
     _didFirstAddToNet = false;
@@ -921,6 +929,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
   }
 
   @Override
+  @Optional.Method(modid = "IC2")
   public double getDemandedEnergy() {
     double max = 0.0;
     double eu = 0.0;
@@ -962,10 +971,16 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
       getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Import;
   }
 
+  @Optional.Method(modid = "IC2")
   public double getEUCapacity() { return ConfigurationHandler.capacityEU * (ForgeDirection.VALID_DIRECTIONS.length + 1); }
+
+  @Optional.Method(modid = "IC2")
   public double getEUrate() { return ConfigurationHandler.rateEU; }
+
+  @Optional.Method(modid = "IC2")
   public double getIncomingEU(int side) { return getStorageIC2in(side).eu; }
 
+  @Optional.Method(modid = "IC2")
   public double getIncomingEU() {
     double sum = 0.0;
     for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
@@ -974,6 +989,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
     return sum;
   }
 
+  @Optional.Method(modid = "IC2")
   public double getOutgoingEU() { return getStorageIC2out().eu; }
 
   public HoppingMode getHoppingModeIn(ForgeDirection dir) {

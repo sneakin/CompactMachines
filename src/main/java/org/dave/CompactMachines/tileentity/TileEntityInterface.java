@@ -168,7 +168,9 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
     
 	@Override
 	public void invalidate() {
-    removeFromEnergyNet();
+    if(Reference.IC2_AVAILABLE) {
+      removeFromEnergyNet();
+    }
 
 		super.invalidate();
 
@@ -180,8 +182,9 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		}
 	}
 
+  @Optional.Method(modid = "IC2")
   private void removeFromEnergyNet() {
-    if (Reference.IC2_AVAILABLE && _isAddedToEnergyNet) {
+    if (_isAddedToEnergyNet) {
 			if (!worldObj.isRemote) {
 				MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
 			}
@@ -271,7 +274,8 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		}
 	}
 
-    private void addToEnergyNet() {
+  @Optional.Method(modid = "IC2")
+  private void addToEnergyNet() {
     if(!_didFirstAddToNet && !worldObj.isRemote) {
       MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
       _didFirstAddToNet = true;
@@ -280,10 +284,11 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
     }
   }
 
-    private void readdToEnergyNet() {
-      removeFromEnergyNet();
-      _didFirstAddToNet = false;
-    }
+  @Optional.Method(modid = "IC2")
+  private void readdToEnergyNet() {
+    removeFromEnergyNet();
+    _didFirstAddToNet = false;
+  }
 
 	private void updateIncomingSignals() {
 		boolean needsNotify = false;
@@ -667,6 +672,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	}
 
 	@Override
+  @Optional.Method(modid = "IC2")
 	public double getDemandedEnergy() {
     //LogHelper.info(this + " " + side + " getDemandedEnergy " + getStorageIC2out().eu + " " + getStorageIC2out().getDemandedEnergy() + " " + getStorageIC2in().getHoppingMode());
     HoppingMode mode = getStorageIC2in().getHoppingMode();
@@ -703,9 +709,17 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
       getStorageIC2in().getHoppingMode() != HoppingMode.Export;
 	}
 
+
+  @Optional.Method(modid = "IC2")
   public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
+
+  @Optional.Method(modid = "IC2")
   public double getEUrate() { return ConfigurationHandler.rateEU; }
+
+  @Optional.Method(modid = "IC2")
   public double getIncomingEU() { return getStorageIC2in().eu; }
+
+  @Optional.Method(modid = "IC2")
   public double getOutgoingEU() { return getStorageIC2out().eu; }
 
 
