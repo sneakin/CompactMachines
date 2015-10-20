@@ -24,7 +24,9 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 import org.dave.CompactMachines.handler.ConfigurationHandler;
 import org.dave.CompactMachines.handler.SharedStorageHandler;
+import org.dave.CompactMachines.init.ModBlocks;
 import org.dave.CompactMachines.integration.AbstractHoppingStorage;
+import org.dave.CompactMachines.integration.HoppingMode;
 import org.dave.CompactMachines.integration.AbstractSharedStorage;
 import org.dave.CompactMachines.integration.appeng.AESharedStorage;
 import org.dave.CompactMachines.integration.appeng.CMGridBlock;
@@ -78,7 +80,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	public int			_gasamount;
 	public int			_energy;
 	public int			_mana;
-	public int			_hoppingmode;
+	public HoppingMode			_hoppingmode;
 
 	private boolean _isAddedToEnergyNet;
 	private boolean _didFirstAddToNet;
@@ -286,7 +288,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	}
 
 	private void hopStorage(AbstractHoppingStorage storage, TileEntity tileEntityInside) {
-		if (storage != null && (storage.getHoppingMode() == 1 || storage.getHoppingMode() == 3 && storage.isAutoHoppingToInside() == true)) {
+		if (storage != null && (storage.getHoppingMode() == HoppingMode.Import || storage.getHoppingMode() == HoppingMode.Auto && storage.isAutoHoppingToInside() == true)) {
 			storage.hopToTileEntity(tileEntityInside, false);
 		}
 	}
@@ -470,7 +472,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		return getStorageFlux().getMaxEnergyStored();
 	}
 
-	public int getHoppingMode(ForgeDirection from) {
+	public HoppingMode getHoppingMode(ForgeDirection from) {
 		return getStorageFlux().getHoppingMode();
 	}
 

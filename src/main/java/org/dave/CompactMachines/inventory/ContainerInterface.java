@@ -11,6 +11,7 @@ import net.minecraftforge.fluids.FluidTankInfo;
 
 import org.dave.CompactMachines.reference.Reference;
 import org.dave.CompactMachines.tileentity.TileEntityInterface;
+import org.dave.CompactMachines.integration.HoppingMode;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -52,7 +53,7 @@ public class ContainerInterface extends ContainerCM {
 		} else if (var == 33) {
 			tileEntityInterface._energy = value;
 		} else if (var == 34) {
-			tileEntityInterface._hoppingmode = value;
+      tileEntityInterface._hoppingmode = HoppingMode.fromInteger(value);
 		} else if (var == 35) {
 			tileEntityInterface._gasamount = value;
 		} else if (var == 36) {

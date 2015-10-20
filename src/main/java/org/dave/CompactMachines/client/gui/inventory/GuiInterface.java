@@ -25,6 +25,7 @@ import org.dave.CompactMachines.network.PacketHandler;
 import org.dave.CompactMachines.reference.Names;
 import org.dave.CompactMachines.reference.Textures;
 import org.dave.CompactMachines.tileentity.TileEntityInterface;
+import org.dave.CompactMachines.integration.HoppingMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -60,9 +61,9 @@ public class GuiInterface extends GuiContainer {
 
 	@Override
 	protected void actionPerformed(GuiButton button) {
-		int nextHoppingMode = tileEntityInterface._hoppingmode + 1;
-		if (nextHoppingMode > 3) {
-			nextHoppingMode = 0;
+		HoppingMode nextHoppingMode = tileEntityInterface._hoppingmode.next();
+		if (nextHoppingMode == HoppingMode.Null) {
+			nextHoppingMode = HoppingMode.Disabled;
 		}
 
 		MessageHoppingModeChange packet = new MessageHoppingModeChange(tileEntityInterface.coords, tileEntityInterface.side, nextHoppingMode);
@@ -103,11 +104,11 @@ public class GuiInterface extends GuiContainer {
 		}
 
 		String hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.disabled");
-		if (tileEntityInterface._hoppingmode == 1) {
+		if (tileEntityInterface._hoppingmode == HoppingMode.Import) {
 			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.importing");
-		} else if (tileEntityInterface._hoppingmode == 2) {
+		} else if (tileEntityInterface._hoppingmode == HoppingMode.Export) {
 			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.exporting");
-		} else if (tileEntityInterface._hoppingmode == 3) {
+		} else if (tileEntityInterface._hoppingmode == HoppingMode.Auto) {
 			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.auto");
 		}
 		hoppingButton.displayString = hoppingText;

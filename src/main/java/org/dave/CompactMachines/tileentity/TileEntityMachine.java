@@ -32,6 +32,7 @@ import org.dave.CompactMachines.handler.ConfigurationHandler;
 import org.dave.CompactMachines.handler.SharedStorageHandler;
 import org.dave.CompactMachines.init.ModBlocks;
 import org.dave.CompactMachines.integration.AbstractHoppingStorage;
+import org.dave.CompactMachines.integration.HoppingMode;
 import org.dave.CompactMachines.integration.AbstractSharedStorage;
 import org.dave.CompactMachines.integration.appeng.AESharedStorage;
 import org.dave.CompactMachines.integration.appeng.CMGridBlock;
@@ -339,7 +340,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 
 		AbstractHoppingStorage hoppingStorage = (AbstractHoppingStorage) storage;
 
-		if (hoppingStorage.getHoppingMode() == 2 || (hoppingStorage.getHoppingMode() == 3 && hoppingStorage.isAutoHoppingToInside() == false)) {
+		if (hoppingStorage.getHoppingMode() == HoppingMode.Export || (hoppingStorage.getHoppingMode() == HoppingMode.Auto && hoppingStorage.isAutoHoppingToInside() == false)) {
 			hoppingStorage.hoppingTick(outside, true);
 		}
 	}

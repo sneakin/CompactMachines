@@ -4,9 +4,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 import org.dave.CompactMachines.handler.SharedStorageHandler;
+import org.dave.CompactMachines.integration.HoppingMode;
 
 public abstract class AbstractHoppingStorage extends AbstractBufferedStorage {
-	private int		hoppingMode;			// 0 - Off, 1 - To the inside, 2 - To the outside, 3 - Auto
+	private HoppingMode		hoppingMode;			// 0 - Off, 1 - To the inside, 2 - To the outside, 3 - Auto
 	private boolean	autoHopToInside;
 
 	protected int	max_cooldown	= 20;
@@ -15,15 +16,15 @@ public abstract class AbstractHoppingStorage extends AbstractBufferedStorage {
 	public AbstractHoppingStorage(SharedStorageHandler storageHandler, int coord, int side) {
 		super(storageHandler, coord, side);
 
-		this.hoppingMode = 0;
+		this.hoppingMode = HoppingMode.Disabled;
 		this.autoHopToInside = false;
 	}
 
-	public int getHoppingMode() {
+	public HoppingMode getHoppingMode() {
 		return this.hoppingMode;
 	}
 
-	public void setHoppingMode(int mode) {
+	public void setHoppingMode(HoppingMode mode) {
 		this.hoppingMode = mode;
 	}
 
@@ -38,14 +39,14 @@ public abstract class AbstractHoppingStorage extends AbstractBufferedStorage {
 	@Override
 	public NBTTagCompound saveToTag() {
 		NBTTagCompound compound = new NBTTagCompound();
-		compound.setInteger("hoppingMode", hoppingMode);
+		compound.setInteger("hoppingMode", hoppingMode.ordinal());
 		compound.setBoolean("autoToInside", autoHopToInside);
 		return compound;
 	}
 
 	@Override
 	public void loadFromTag(NBTTagCompound tag) {
-		hoppingMode = tag.getInteger("hoppingMode");
+    hoppingMode = HoppingMode.fromInteger(tag.getInteger("hoppingMode"));
 		autoHopToInside = tag.getBoolean("autoToInside");
 	}
 

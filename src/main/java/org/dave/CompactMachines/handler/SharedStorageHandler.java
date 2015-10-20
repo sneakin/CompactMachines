@@ -21,6 +21,7 @@ import net.minecraftforge.event.world.WorldEvent.Save;
 
 import org.dave.CompactMachines.integration.AbstractBufferedStorage;
 import org.dave.CompactMachines.integration.AbstractHoppingStorage;
+import org.dave.CompactMachines.integration.HoppingMode;
 import org.dave.CompactMachines.integration.AbstractSharedStorage;
 import org.dave.CompactMachines.integration.appeng.AESharedStorage;
 import org.dave.CompactMachines.integration.botania.BotaniaSharedStorage;
@@ -123,7 +124,7 @@ public class SharedStorageHandler {
 		}
 	}
 
-	public void setHoppingMode(int coord, int side, String type, int hoppingMode) {
+	public void setHoppingMode(int coord, int side, String type, HoppingMode hoppingMode) {
 		AbstractSharedStorage storage = getStorage(coord, side, type);
 		if(storage instanceof AbstractHoppingStorage) {
 			((AbstractHoppingStorage)storage).setHoppingMode(hoppingMode);
@@ -131,7 +132,7 @@ public class SharedStorageHandler {
 		}
 	}
 
-	public void setHoppingModeForAll(int coord, int side, int hoppingMode) {
+	public void setHoppingModeForAll(int coord, int side, HoppingMode hoppingMode) {
 		for(String key : storageList.keySet()) {
 			setHoppingMode(coord, side, key, hoppingMode);
 		}
