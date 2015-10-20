@@ -97,6 +97,7 @@ This mod would not have been possible without the following open source mods:
 * [Minefactory Reloaded](https://github.com/skyboy/MineFactoryReloaded/) (helped with drawing tanks+energy on GUIs)
 * [Random Things](https://github.com/lumien231/Random-Things/) (helped with dimension handling)
 * [EquivalentExchange](https://github.com/pahimar/Equivalent-Exchange-3/) + LetsModReboot (how to get started)
+* [PowerConverters](https://github.com/covers1624/PowerConverters) for inspiration + [sneakin](http://twitter.com/sneakin/) for IC2 support.
 
 All of these mods provided code for certain features or at least ideas on how to tackle
 some implementations. Again, this mod would not have been possible without the fantastic
