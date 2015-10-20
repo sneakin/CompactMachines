@@ -29,14 +29,18 @@ public class EntangleRegistry {
 	}
 
 	public boolean hasRemainingMachines(int coord) {
+		return (numberOfMachines(coord) > 0);
+	}
+
+  public int numberOfMachines(int coord) {
 		if(!reg.containsKey(coord)) {
-			return false;
+			return 0;
 		}
 
 		HashMap<Integer, WorldCoords> list = reg.get(coord);
-		return (list.size() > 0);
-	}
-
+		return list.size();
+  }
+  
 	public void removeMachineTile(TileEntityMachine tileEntityMachine) {
 		removeMachineTile(tileEntityMachine.coords, tileEntityMachine.getWorldObj(), tileEntityMachine.xCoord, tileEntityMachine.yCoord, tileEntityMachine.zCoord);
 	}

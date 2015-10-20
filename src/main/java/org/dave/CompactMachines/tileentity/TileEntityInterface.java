@@ -251,12 +251,14 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 
     if (Reference.IC2_AVAILABLE) {
         addToEnergyNet();
-        
-        if(getStorageIC2in().interfaceModeChanged()) {
+
+        HoppingMode mode = getStorageIC2in().getHoppingMode();
+        if(mode != _hoppingmode) {
+          _hoppingmode = mode;
           //LogHelper.info(this + " mode changed " + getStorageIC2in().getHoppingMode());
 
           readdToEnergyNet();
-          getStorageIC2in().clearInterfaceModeChanged();
+          //getStorageIC2in().clearInterfaceModeChanged();
         }
     }
 

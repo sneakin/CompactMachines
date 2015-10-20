@@ -16,17 +16,11 @@ import ic2.api.energy.tile.IEnergySource;
 
 public class IC2SharedStorage extends AbstractHoppingStorage {
   public double eu;
-  private HoppingMode _oldInterfaceMode;
-  private HoppingMode _oldMachineMode;
-  private int _modeClearCount;
     
   public IC2SharedStorage(SharedStorageHandler storageHandler, int coord, int side) {
     super(storageHandler, coord, side);
 
     this.eu = 0;
-    this._oldInterfaceMode = HoppingMode.Null;
-    this._oldMachineMode = HoppingMode.Null;
-    this._modeClearCount = 0;
   }
 
   @Override
@@ -51,27 +45,6 @@ public class IC2SharedStorage extends AbstractHoppingStorage {
 	public void hopToTileEntity(TileEntity target, boolean useOppositeSide) {
     if(target instanceof IEnergySink || target instanceof IEnergySource) {
       //target.markDirty();
-    }
-  }
-
-  public boolean interfaceModeChanged() {
-    return getHoppingMode() != _oldInterfaceMode;
-  }
-  
-  public void clearInterfaceModeChanged() {
-    _oldInterfaceMode = getHoppingMode();
-  }
-
-  public boolean machineModeChanged() {
-    return getHoppingMode() != _oldMachineMode;
-  }
-  
-  public void clearMachineModeChanged() {
-    if(_modeClearCount > 1) { // TODO entanglement
-      _modeClearCount = 0;
-      _oldMachineMode = getHoppingMode();
-    } else {
-      _modeClearCount += 1;
     }
   }
 

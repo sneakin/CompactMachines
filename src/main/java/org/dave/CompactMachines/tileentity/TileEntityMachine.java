@@ -301,15 +301,12 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 			updateIncomingSignals();
 		}
 
-    if (Reference.IC2_AVAILABLE) {
-        addToEnergyNet();
-
-        if(hoppingModeChanged()) {
-          readdToEnergyNet();
-        }
-    }
-
 		if (!worldObj.isRemote) {
+      if (Reference.IC2_AVAILABLE) {
+        addToEnergyNet();
+        updateIC2HoppingMode();
+      }
+
 			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 				TileEntity outside = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
 				for (AbstractSharedStorage storage : SharedStorageHandler.instance(false).getAllStorages(coords, dir.ordinal())) {
@@ -324,17 +321,21 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 	}
 
   @Optional.Method(modid = "IC2")
-  private boolean hoppingModeChanged() {
+  private void updateIC2HoppingMode() {
     boolean needs_update = false;
     for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
-      if(getStorageIC2in(dir.ordinal()).machineModeChanged()) {
+      HoppingMode mode = getStorageIC2in(dir.ordinal()).getHoppingMode();
+      if(mode != _hoppingmodes[dir.ordinal()]) {
+        _hoppingmodes[dir.ordinal()] = mode;
         //LogHelper.info(this + " mode changed " + dir + " " + getStorageIC2in(dir.ordinal()).getHoppingMode());
-        getStorageIC2in(dir.ordinal()).clearMachineModeChanged();
-        return true;
+        //getStorageIC2in(dir.ordinal()).clearMachineModeChanged(CompactMachines.instance.entangleRegistry.numberOfMachines(entangledInstance));
+        needs_update = true;
       }
     }
 
-    return false;
+    if(needs_update) {
+      readdToEnergyNet();
+    }
   }
   
   @Optional.Method(modid = "IC2")
