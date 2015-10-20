@@ -100,7 +100,7 @@ public class ConfigurationHandler {
 		capacityFluid = configuration.getInt("capacityFluid", "CompactMachines", 1000, 0, Integer.MAX_VALUE, "Maximum amount of fluid (in mB) a CM buffer can hold.");
 		capacityGas = configuration.getInt("capacityGas", "CompactMachines", 1024, 0, Integer.MAX_VALUE, "Maximum amount of gas a CM buffer can hold.");
 		capacityMana = configuration.getInt("capacityMana", "CompactMachines", 10000, 0, Integer.MAX_VALUE, "Maximum amount of Botania Mana a CM buffer can hold.");
-		capacityEU = configuration.getInt("capacityEU", "CompactMachines", 128, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer can hold.");
+		capacityEU = configuration.getInt("capacityEU", "CompactMachines", 32, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer can hold.");
 		rateEU = configuration.getInt("rateEU", "CompactMachines", 32, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer will transfer.");
 
 		int red = configuration.getInt("psdDisplayColor.red", "Rendering", 0x27, 0, Integer.MAX_VALUE, "Font color for the PSD");
