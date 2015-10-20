@@ -11,6 +11,7 @@ import net.minecraftforge.fluids.FluidTankInfo;
 
 import org.dave.CompactMachines.reference.Reference;
 import org.dave.CompactMachines.tileentity.TileEntityMachine;
+import org.dave.CompactMachines.integration.HoppingMode;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -112,7 +113,15 @@ public class ContainerMachine extends ContainerCM {
 			tileEntityMachine._gasid[5] = value;
 		} else if (var == 80) {
 			tileEntityMachine._mana = value;
-		}
+		} else if (var == 81) {
+      tileEntityMachine._euCapacity = value;
+    } else if (var == 82) {
+      tileEntityMachine._euRate = value;
+    } else if (var >= 83 && var < (83 + 7)) {
+      tileEntityMachine._eu[var - 83] = value;
+    } else if (var >= 90 && var < (90 + 6)) {
+      tileEntityMachine._hoppingmodes[var - 90] = HoppingMode.fromInteger(value);
+    }
 	}
 
 	@Override
@@ -126,6 +135,17 @@ public class ContainerMachine extends ContainerCM {
 			}
 		}
 
+    if(Reference.IC2_AVAILABLE) {
+      for (int i = 0; i < crafters.size(); i++) {
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 81, (int)tileEntityMachine.getEUCapacity());
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 82, (int)tileEntityMachine.getEUrate());
+
+        for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+          ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 83 + dir.ordinal(), (int)tileEntityMachine.getIncomingEU(dir.ordinal()));
+        }
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 83 + ForgeDirection.UNKNOWN.ordinal(), (int)tileEntityMachine.getOutgoingEU());
+      }
+    }
 
 		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 			FluidTankInfo[] tanks = tileEntityMachine.getTankInfo(dir);
@@ -163,6 +183,7 @@ public class ContainerMachine extends ContainerCM {
 
 			for (int i = 0; i < crafters.size(); i++) {
 				((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 60 + dir.ordinal(), tileEntityMachine.getEnergyStored(dir));
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 90 + dir.ordinal(), tileEntityMachine.getHoppingModeIn(dir).ordinal());
 			}
 		}
 	}

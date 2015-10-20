@@ -20,9 +20,11 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.dave.CompactMachines.reference.Reference;
 import org.dave.CompactMachines.init.ModBlocks;
 import org.dave.CompactMachines.tileentity.TileEntityInterface;
 import org.dave.CompactMachines.tileentity.TileEntityMachine;
+import org.dave.CompactMachines.integration.HoppingMode;
 
 public class WailaHandler implements IWailaDataProvider {
 
@@ -72,12 +74,14 @@ public class WailaHandler implements IWailaDataProvider {
     if (interf.side != -1) {
       String direction = ForgeDirection.getOrientation(interf.side).toString();
       direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
-      currenttip.add(YELLOW + "Side: " + RESET + direction);
-
-      if(ConfigurationHandler.enableIntegrationIC2) {
-        currenttip.add(YELLOW + "EU Capacity: " + RESET + interf.getEUCapacity() + " EU/t");
-        currenttip.add("  IN: " + interf.getIncomingEU());
-        currenttip.add(" OUT: " + interf.getOutgoingEU());
+      currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.side") + ": " + RESET + direction);
+      if(interf._hoppingmode != null) {
+        currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.mode") + ": " + RESET + interf._hoppingmode.getLocalizedName());
+      }
+      
+      if(Reference.IC2_AVAILABLE && ConfigurationHandler.enableIntegrationIC2) {
+        currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.eu_capacity") + ": " + RESET + interf._eu + "/" + interf._euCapacity + " EU");
+        currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.eu_rate") + ": " + RESET + interf._euRate + " EU/t");
       }
     }
 
@@ -117,17 +121,23 @@ public class WailaHandler implements IWailaDataProvider {
 
     String direction = accessor.getSide().toString();
     direction = direction.substring(0, 1) + direction.substring(1).toLowerCase();
-    currenttip.add(YELLOW + "Side: " + RESET + direction);
-    currenttip.add(YELLOW + "Size: " + RESET + StatCollector.translateToLocal(langStr));
+    currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.side") + ": " + RESET + direction);
+    String modes = new String();
+    for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+      HoppingMode mode = machine._hoppingmodes[dir.ordinal()];
+      if(mode == null) modes += "?";
+      else modes += mode.initial;
+    }
+    currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.modes") + ": " + RESET + modes);
+    currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.size") + ": " + RESET + StatCollector.translateToLocal(langStr));
 
-    if(ConfigurationHandler.enableIntegrationIC2) {
-      currenttip.add(YELLOW + "EU Capacity: " + RESET + machine.getEUCapacity() + " EU/t");
-      if(machine.getIncomingEU() != 0.0) {
-        currenttip.add("  IN: " + machine.getIncomingEU());
+    if(Reference.IC2_AVAILABLE && ConfigurationHandler.enableIntegrationIC2) {
+      double eu = machine._eu[ForgeDirection.UNKNOWN.ordinal()];
+      for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+        eu += machine._eu[dir.ordinal()];
       }
-      if(machine.getOutgoingEU() != 0.0) {
-        currenttip.add(" OUT: " + machine.getOutgoingEU());
-      }
+      currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.eu_capacity") + ": " + RESET + eu + "/" + machine._euCapacity + " EU");
+      currenttip.add(YELLOW + StatCollector.translateToLocal("tooltip.cm:machine.eu_rate") + ": " + RESET + machine._euRate + " EU/t");
     }
 
     return currenttip;

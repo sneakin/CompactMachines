@@ -26,6 +26,8 @@ import org.dave.CompactMachines.reference.Names;
 import org.dave.CompactMachines.reference.Textures;
 import org.dave.CompactMachines.tileentity.TileEntityInterface;
 import org.dave.CompactMachines.integration.HoppingMode;
+import org.dave.CompactMachines.reference.Reference;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -103,15 +105,7 @@ public class GuiInterface extends GuiContainer {
 			drawEnergy(96, 61, energySize);
 		}
 
-		String hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.disabled");
-		if (tileEntityInterface._hoppingmode == HoppingMode.Import) {
-			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.importing");
-		} else if (tileEntityInterface._hoppingmode == HoppingMode.Export) {
-			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.exporting");
-		} else if (tileEntityInterface._hoppingmode == HoppingMode.Auto) {
-			hoppingText = StatCollector.translateToLocal("container.cm:hoppingMode.auto");
-		}
-		hoppingButton.displayString = hoppingText;
+		hoppingButton.displayString = tileEntityInterface._hoppingmode.getLocalizedName();
 	}
 
 	protected void drawEnergy(int xOffset, int yOffset, int level) {
@@ -280,12 +274,8 @@ public class GuiInterface extends GuiContainer {
 				lines.add(String.format("%s: %.1f%%", StatCollector.translateToLocal("tooltip.cm:machine.mana"), ratio * 100));
 			}
 
-      lines.add("EU Capacity: " + tileEntityInterface.getEUCapacity() + " EU/t");
-      if(tileEntityInterface.getIncomingEU() != 0.0) {
-        lines.add("EU in: " + tileEntityInterface.getIncomingEU());
-      }
-      if(tileEntityInterface.getOutgoingEU() != 0.0) {
-        lines.add("EU out: " + tileEntityInterface.getOutgoingEU());
+      if(Reference.IC2_AVAILABLE) {
+          lines.add(tileEntityInterface._eu + "/" + tileEntityInterface._euCapacity + " EU @ " + tileEntityInterface._euRate + " EU/t");
       }
 		}
 

@@ -22,6 +22,8 @@ import org.dave.CompactMachines.inventory.ContainerMachine;
 import org.dave.CompactMachines.reference.Names;
 import org.dave.CompactMachines.reference.Textures;
 import org.dave.CompactMachines.tileentity.TileEntityMachine;
+import org.dave.CompactMachines.reference.Reference;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -57,7 +59,9 @@ public class GuiMachine extends GuiContainer {
 	public void drawTooltips(int mouseX, int mouseY) {
 		List<String> lines = new ArrayList<String>(2);
 
-		for (int i = 0; i < tileEntityMachine._fluidid.length; i++) {
+		//for (int i = 0; i < tileEntityMachine._fluidid.length; i++) {
+		for (ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+      int i = dir.ordinal();
 			int fluidId = tileEntityMachine._fluidid[i];
 			Fluid fluid = FluidRegistry.getFluid(fluidId);
 			int fluidAmount = tileEntityMachine._fluidamount[i];
@@ -70,6 +74,7 @@ public class GuiMachine extends GuiContainer {
 				String side = ForgeDirection.getOrientation(i).toString();
 				side = side.substring(0, 1) + side.substring(1).toLowerCase();
 				lines.add(side);
+        lines.add(tileEntityMachine._hoppingmodes[i].getLocalizedName());
 
 				if (energyAmount > 0) {
 					lines.add("RF: " + energyAmount);
@@ -96,12 +101,8 @@ public class GuiMachine extends GuiContainer {
 					lines.add(String.format("%s: %.1f%%", StatCollector.translateToLocal("tooltip.cm:machine.mana"), ratio * 100));
 				}
 
-        lines.add("EU Capacity: " + tileEntityMachine.getEUCapacity() + " EU/t");
-        if(tileEntityMachine.getIncomingEU(i) != 0.0) {
-            lines.add("  IN: " + tileEntityMachine.getIncomingEU(i));
-        }
-        if(tileEntityMachine.getOutgoingEU() != 0.0) {
-            lines.add(" OUT: " + tileEntityMachine.getOutgoingEU());
+        if(Reference.IC2_AVAILABLE) {
+          lines.add(String.format("%.2f/%.2f EU @ %.2f EU/t", tileEntityMachine._eu[i], tileEntityMachine._euCapacity, tileEntityMachine._euRate));
         }
 			}
 		}

@@ -86,6 +86,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 	public int[]							_gasamount;
 	public int[]							_energy;
 	public int								_mana = 0;
+  public double[]           _eu;
+  public double             _euRate = 0;
+  public double             _euCapacity = 0;
+  public HoppingMode[]      _hoppingmodes;
 	public int								meta			= 0;
 
 	public int								entangledInstance;
@@ -112,6 +116,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		_gasamount = new int[6];
 		_energy = new int[6];
 		_mana = 0;
+    _eu = new double[7];
+    _hoppingmodes = new HoppingMode[6];
+    _euRate = ConfigurationHandler.rateEU;
+    _euCapacity = ConfigurationHandler.capacityEU;
 
 		gridBlocks = new HashMap<Integer, CMGridBlock>();
 		gridNodes = new HashMap<Integer, IGridNode>();
@@ -954,7 +962,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
       getStorageIC2in(direction.ordinal()).getHoppingMode() != HoppingMode.Import;
   }
 
-  public double getEUCapacity() { return ConfigurationHandler.capacityEU; }
+  public double getEUCapacity() { return ConfigurationHandler.capacityEU * (ForgeDirection.VALID_DIRECTIONS.length + 1); }
   public double getEUrate() { return ConfigurationHandler.rateEU; }
   public double getIncomingEU(int side) { return getStorageIC2in(side).eu; }
 

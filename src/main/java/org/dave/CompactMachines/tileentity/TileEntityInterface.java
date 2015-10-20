@@ -82,6 +82,9 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 	public int			_energy;
 	public int			_mana;
 	public HoppingMode			_hoppingmode;
+  public double   _eu;
+  public double   _euCapacity = 0.0;
+  public double   _euRate = 0.0;
 
 	private boolean _isAddedToEnergyNet;
 	private boolean _didFirstAddToNet;
@@ -94,6 +97,9 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		_gasamount = 0;
 		_energy = 0;
 		_mana = 0;
+    _eu = 0;
+    _euCapacity = ConfigurationHandler.capacityEU;
+    _euRate = ConfigurationHandler.rateEU;
 
     _isAddedToEnergyNet = false;
     _didFirstAddToNet = false;

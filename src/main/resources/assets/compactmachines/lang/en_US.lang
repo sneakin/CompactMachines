@@ -24,6 +24,7 @@ container.cm:hoppingMode.disabled=Disabled
 container.cm:hoppingMode.importing=Importing
 container.cm:hoppingMode.exporting=Exporting
 container.cm:hoppingMode.auto=Auto
+container.cm.hoppingMode.null=????
 
 # ToolTips
 tooltip.cm:machine.size.zero=Tiny
@@ -34,6 +35,12 @@ tooltip.cm:machine.size.four=Giant
 tooltip.cm:machine.size.five=Maximum Size
 tooltip.cm:machine.coords=Machine Number
 tooltip.cm:machine.mana=Mana
+tooltip.cm:machine.side=Side
+tooltip.cm:machine.mode=Mode
+tooltip.cm:machine.modes=Modes
+tooltip.cm:machine.size=Size
+tooltip.cm:machine.eu_capacity=EU Capacity
+tooltip.cm:machine.eu_rate=EU Rate
 
 # Dimension Travelling
 loading.cm:enter=Shrinking to machine size. Ffffflllp.

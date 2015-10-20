@@ -60,7 +60,13 @@ public class ContainerInterface extends ContainerCM {
 			tileEntityInterface._gasid = value;
 		} else if (var == 37) {
 			tileEntityInterface._mana = value;
-		}
+		} else if (var == 38) {
+      tileEntityInterface._eu = value;
+    } else if (var == 39) {
+      tileEntityInterface._euCapacity = value;
+    } else if (var == 40) {
+      tileEntityInterface._euRate = value;
+    }
 	}
 
 	@Override
@@ -102,12 +108,18 @@ public class ContainerInterface extends ContainerCM {
 		}
 
 		for (int i = 0; i < crafters.size(); i++) {
-			((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 33, tileEntityInterface.getEnergyStored(ForgeDirection.UNKNOWN));
-			((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 34, tileEntityInterface.getHoppingMode(ForgeDirection.UNKNOWN));
+      ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 33, tileEntityInterface.getEnergyStored(ForgeDirection.UNKNOWN));
+			((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 34, tileEntityInterface.getHoppingMode(ForgeDirection.UNKNOWN).ordinal());
 
 			if(Reference.BOTANIA_AVAILABLE) {
 				((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 37, tileEntityInterface.getCurrentMana());
 			}
+
+      if(Reference.IC2_AVAILABLE) {
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 38, (int)tileEntityInterface.getIncomingEU());
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 39, (int)tileEntityInterface.getEUCapacity());
+        ((ICrafting) crafters.get(i)).sendProgressBarUpdate(this, 40, (int)tileEntityInterface.getEUrate());
+      }
 		}
 	}
 
