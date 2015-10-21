@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.dave.CompactMachines.handler.ConfigurationHandler;
 import org.dave.CompactMachines.init.ModBlocks;
 import org.dave.CompactMachines.tileentity.TileEntityMachine;
+import org.dave.CompactMachines.tileentity.TileEntityInterface;
 import org.lwjgl.opengl.GL11;
 
 public class RenderPersonalShrinkingDevice implements IItemRenderer {
@@ -55,6 +56,11 @@ public class RenderPersonalShrinkingDevice implements IItemRenderer {
 		if (block == ModBlocks.interfaceblock) {
 			GL11.glScalef(0.5F, 0.5F, 0.5F);
 			font.drawString("Interface", 0, 0, ConfigurationHandler.psdDisplayColor);
+
+			TileEntityInterface teInterface = (TileEntityInterface) Minecraft.getMinecraft().thePlayer.worldObj.getTileEntity(pos.blockX, pos.blockY, pos.blockZ);
+
+      GL11.glTranslatef(0F, 9F, 0F);
+      font.drawString(teInterface._hoppingmode.getLocalizedName(), 0, 0, ConfigurationHandler.psdDisplayColor);
 		} else if (block == ModBlocks.machine) {
 			GL11.glScalef(0.4F, 0.4F, 0.4F);
 			TileEntityMachine teMachine = (TileEntityMachine) Minecraft.getMinecraft().thePlayer.worldObj.getTileEntity(pos.blockX, pos.blockY, pos.blockZ);
@@ -67,6 +73,10 @@ public class RenderPersonalShrinkingDevice implements IItemRenderer {
 
 			GL11.glTranslatef(0F, 9F, 0F);
 			font.drawString("Upgraded: " + (teMachine.isUpgraded ? "yes" : "no"), 0, 0, ConfigurationHandler.psdDisplayColor);
+
+      GL11.glTranslatef(0F, 9F, 0F);
+			ForgeDirection dir = ForgeDirection.getOrientation(pos.sideHit);
+      font.drawString(teMachine._hoppingmodes[dir.ordinal()].getLocalizedName(), 0, 0, ConfigurationHandler.psdDisplayColor);
 		}
 
 		GL11.glPopMatrix();

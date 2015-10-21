@@ -216,6 +216,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		super.readFromNBT(tag);
 		side = tag.getInteger("side");
 		coords = tag.getInteger("coords");
+    _hoppingmode = HoppingMode.fromInteger(tag.getInteger("hopping-mode"));
 	}
 
 	@Override
@@ -224,6 +225,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
 		super.writeToNBT(tag);
 		tag.setInteger("side", side);
 		tag.setInteger("coords", coords);
+    tag.setInteger("hopping-mode", _hoppingmode.ordinal());
 	}
 
 	@Override

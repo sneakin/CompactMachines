@@ -189,6 +189,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		if (isUpgraded && worldObj != null && worldObj.isRemote) {
 			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 		}
+
+    for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+      _hoppingmodes[dir.ordinal()] = HoppingMode.fromInteger(nbtTagCompound.getInteger("hopping-mode-" + dir.ordinal()));
+    }
 	}
 
 	@Override
@@ -203,6 +207,10 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		nbtTagCompound.setInteger("coords", coords);
 		nbtTagCompound.setBoolean("upgraded", isUpgraded);
 		nbtTagCompound.setInteger("entangle-id", entangledInstance);
+
+    for(ForgeDirection dir: ForgeDirection.VALID_DIRECTIONS) {
+      nbtTagCompound.setInteger("hopping-mode-" + dir.ordinal(), _hoppingmodes[dir.ordinal()].ordinal());
+    }
 	}
 
 	@Override
