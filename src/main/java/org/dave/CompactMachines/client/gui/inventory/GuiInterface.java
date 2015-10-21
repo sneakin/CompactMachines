@@ -275,7 +275,7 @@ public class GuiInterface extends GuiContainer {
 			}
 
       if(Reference.IC2_AVAILABLE) {
-          lines.add(tileEntityInterface._eu + "/" + tileEntityInterface._euCapacity + " EU @ " + tileEntityInterface._euRate + " EU/t");
+        lines.add(String.format("%.0f / %.0f EU @ %.0f EU/t", tileEntityInterface._eu, tileEntityInterface._euCapacity, tileEntityInterface._euRate));
       }
 		}
 

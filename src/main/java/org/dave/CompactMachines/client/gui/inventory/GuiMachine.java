@@ -102,7 +102,7 @@ public class GuiMachine extends GuiContainer {
 				}
 
         if(Reference.IC2_AVAILABLE) {
-          lines.add(String.format("%.2f/%.2f EU @ %.2f EU/t", tileEntityMachine._eu[i], tileEntityMachine._euCapacity, tileEntityMachine._euRate));
+          lines.add(String.format("%.0f/%.0f EU @ %.0f EU/t", tileEntityMachine._eu[i], tileEntityMachine._euCapacity, tileEntityMachine._euRate));
         }
 			}
 		}

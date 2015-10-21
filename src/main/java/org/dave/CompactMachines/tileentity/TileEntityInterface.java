@@ -100,6 +100,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
     _eu = 0;
     _euCapacity = ConfigurationHandler.capacityEU;
     _euRate = ConfigurationHandler.rateEU;
+    _hoppingmode = HoppingMode.Disabled;
 
     _isAddedToEnergyNet = false;
     _didFirstAddToNet = false;
@@ -253,7 +254,7 @@ public class TileEntityInterface extends TileEntityCM implements IInventory, IFl
         addToEnergyNet();
 
         HoppingMode mode = getStorageIC2in().getHoppingMode();
-        if(mode != _hoppingmode) {
+        if(mode != _hoppingmode) { // TODO pull hopping mode updates out of IC2
           _hoppingmode = mode;
           //LogHelper.info(this + " mode changed " + getStorageIC2in().getHoppingMode());
 

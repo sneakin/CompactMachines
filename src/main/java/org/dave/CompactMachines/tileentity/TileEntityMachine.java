@@ -2,6 +2,7 @@ package org.dave.CompactMachines.tileentity;
 
 import java.util.List;
 import java.util.HashMap;
+import java.util.Arrays;
 
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
@@ -118,6 +119,7 @@ public class TileEntityMachine extends TileEntityCM implements ISidedInventory, 
 		_mana = 0;
     _eu = new double[7];
     _hoppingmodes = new HoppingMode[6];
+    Arrays.fill(_hoppingmodes, HoppingMode.Disabled);
     _euRate = ConfigurationHandler.rateEU;
     _euCapacity = ConfigurationHandler.capacityEU;
 
