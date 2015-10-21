@@ -51,9 +51,12 @@ public class IC2SharedStorage extends AbstractHoppingStorage {
   public double injectEnergy(double amount, double voltage) {
     setDirty();
 
-    // todo rate limit w/ rateEU
+    // rate limit
     double new_amount = Math.min(ConfigurationHandler.rateEU, amount);
     double leftover = amount - new_amount;
+
+    // perform loss or gain
+    new_amount += new_amount * ConfigurationHandler.gainEU / 1e6;
     
     double new_eu = eu + new_amount;
     if(new_eu <= ConfigurationHandler.capacityEU) {

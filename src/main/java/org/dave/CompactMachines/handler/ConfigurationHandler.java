@@ -23,6 +23,7 @@ public class ConfigurationHandler {
 	public static int			capacityMana;
 	public static int			capacityEU;
 	public static int			rateEU;
+  public static int     gainEU;
 	public static int			cooldownRF;
 	public static int			cooldownItems;
 	public static int			cooldownFluid;
@@ -102,6 +103,7 @@ public class ConfigurationHandler {
 		capacityMana = configuration.getInt("capacityMana", "CompactMachines", 10000, 0, Integer.MAX_VALUE, "Maximum amount of Botania Mana a CM buffer can hold.");
 		capacityEU = configuration.getInt("capacityEU", "CompactMachines", 32, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer can hold.");
 		rateEU = configuration.getInt("rateEU", "CompactMachines", 32, 0, Integer.MAX_VALUE, "Maximum amount of IC2 EU a CM buffer will transfer.");
+    gainEU = configuration.getInt("gainEU", "CompactMachines", 1000, Integer.MIN_VALUE, Integer.MAX_VALUE, "Permillionth of EU that is gained or lost to the CM.");
 
 		int red = configuration.getInt("psdDisplayColor.red", "Rendering", 0x27, 0, Integer.MAX_VALUE, "Font color for the PSD");
 		int green = configuration.getInt("psdDisplayColor.green", "Rendering", 0xEB, 0, Integer.MAX_VALUE, "");
